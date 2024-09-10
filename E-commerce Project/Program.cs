@@ -22,7 +22,9 @@ namespace Ecommerce
                 try
                 {
                     connection.Open();
+                    Thread.Sleep(1000);
                     Console.WriteLine("Connection stablished!");
+                    Thread.Sleep(1000);
 
                     // Continue from there.
 
@@ -31,57 +33,94 @@ namespace Ecommerce
                     decimal choosenBalance = (decimal)randomValue;
 
                     Console.Clear();
+                    Thread.Sleep(2000);
                     Console.WriteLine("Bem-vindo ao EducaMente!");
                     Console.WriteLine();
+                    Thread.Sleep(2000);
                     Console.WriteLine("Este é um projeto e-commerce da EducaMente que fornece livros diversos tipos com bons preços para os bons leitores!");
                     Console.WriteLine();
-                    Console.WriteLine("Você já possui uma conta? (Sim) ou (Não)");
-                    string signAnswer = Console.ReadLine();
-
-                    Console.Clear();
+                    Thread.Sleep(1000);
 
                     // Novo Usuário 
-                    if (signAnswer.ToLower() == "não")
+                    while (true)
                     {
-                        string hashedPass;
-                        Console.WriteLine("____________________");
-                        Console.WriteLine();
-                        Console.WriteLine("Nome de Usuário: ");
-                        string answerUserName = Console.ReadLine();
-                        while (true)
-                        {
-                            Console.WriteLine("Senha: ");
-                            string firstPass = Console.ReadLine();
-                            Console.WriteLine("Confirme a Senha: ");
-                            string secondPass = Console.ReadLine();
+                        string hasAccount = "Você já possui uma conta? (Sim) ou (Não)";
+                        Console.WriteLine(hasAccount);
+                        string signAnswer = Console.ReadLine();
 
-                            if (firstPass != secondPass)
+                        Console.Clear();
+
+                        if (signAnswer.ToLower() == "não")
+                        {
+                            string hashedPass;
+                            Console.WriteLine("____________________");
+                            Console.WriteLine();
+                            Console.WriteLine("Nome de Usuário: ");
+                            string answerUserName = Console.ReadLine();
+                            while (true)
                             {
-                                Console.WriteLine("As senhas não coincidem entre si. Tente novamente.");
-                                Console.SetCursorPosition(0, Console.CursorTop - 1);
-                                continue;
+                                Console.WriteLine("Senha: ");
+                                string firstPass = Console.ReadLine();
+                                Console.WriteLine("Confirme a Senha: ");
+                                string secondPass = Console.ReadLine();
+
+                                if (firstPass != secondPass)
+                                {
+                                    Console.WriteLine("As senhas não coincidem entre si. Tente novamente.");
+                                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                    continue;
+                                }
+                                else if (firstPass == secondPass)
+                                {
+                                    hashedPass = BCrypt.Net.BCrypt.HashPassword(firstPass);
+                                    break;
+                                }
+
                             }
-                            else if (firstPass == secondPass)
+
+                            // Dados de registro prontos, enviando as informações do novo usuário para a classe User.cs como newUser
+
+                            User newUser = new User
                             {
-                                hashedPass = BCrypt.Net.BCrypt.HashPassword(firstPass);
-                                break;
+                                UserName = answerUserName,
+                                PasswordHash = hashedPass,
+                                Balance = choosenBalance
+
+                            };
+
+                            // Chamando o método que verifica se já existe outro usuário já existente com o nome inserido
+
+                            if (newUser.UserExists(connection, newUser) == false)
+                            {
+                                // Chamando o método que insere o novo usuário no banco de dados MySql
+                                newUser.InsertUser(connection, newUser);
+                                Console.WriteLine();
+                            }
+                            else
+                            {
+                                Console.Clear();
+                                Console.WriteLine("Nome de usuário já cadastrado. Por favor, tente novamente.");
+                                Console.WriteLine();
+                                Thread.Sleep(2000);
+                                Console.Clear();
+                                continue;
                             }
 
                         }
-
-                        // Processo de enviar as informações a classe usuário
-
-                        User newUser = new User
+                        else if (signAnswer.ToLower() == "sim")
                         {
-                            UserName = answerUserName,
-                            PasswordHash = hashedPass,
-                            Balance = choosenBalance
 
-                        };
+                        }
+                        else
+                        {
+                            Console.WriteLine("Opção inválida. Por favor, tente novamente.");
+                            Thread.Sleep(3000);
+                            Console.Clear();
+                            continue;
 
-                        newUser.InsertUser(connection, newUser);
-
+                        }
                     }
+                    
                 }
                 catch (MySqlException ex)
                 {
@@ -94,7 +133,6 @@ namespace Ecommerce
                     Console.WriteLine("Conexão encerrada.");
                 }
             }
-
 
         }
     }
