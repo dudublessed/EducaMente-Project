@@ -18,8 +18,12 @@ Later on i will put more details.
 ## Execute it Yourself!
 
 - First, you must install MySQL Server [MySql Server](https://dev.mysql.com/downloads/installer/)
+
+#
 ![1](https://github.com/user-attachments/assets/40d7bb8d-f8d6-4116-b69b-030f8e6a9f8f)
 
+
+#
 - Then...
 
 
