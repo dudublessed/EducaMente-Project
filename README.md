@@ -25,7 +25,6 @@ Later on i will put more details.
   
 ![1](https://github.com/user-attachments/assets/40d7bb8d-f8d6-4116-b69b-030f8e6a9f8f)
 
-
 #
 **DataBase Dump**
 - Go the drive link below and download the Project DataBase paste.
@@ -39,6 +38,29 @@ Later on i will put more details.
 
 #
 **Final Steps**
+
+
+- Then, set your UserName and Password to connect to your own local instance DataBase.
+- With the DataBase created, import the previously downloaded DataBase Dump Files into your DataBase, follow the steps:
+
+<!-- Linha Invisível -->
+<p>&nbsp;</p>
+
+![3](https://github.com/user-attachments/assets/7b65d946-84c6-47f6-9483-f1247d463e54)
+
+<!-- Linha Invisível -->
+<p>&nbsp;</p>
+
+![4](https://github.com/user-attachments/assets/7824e9a4-8f32-40c6-a644-f904ad937d5e)
+
+<!-- Linha Invisível -->
+<p>&nbsp;</p>
+
+![5](https://github.com/user-attachments/assets/675404f6-4c4d-47c5-81b1-7055010bccdb)
+
+<!-- Linha Invisível -->
+<p>&nbsp;</p>
+
 - Configure your IDE for C# with MySQL and get this code project from here.
 - Change the connection string with your MySql UserName (the default is root) and your password.
 - Test it out!
