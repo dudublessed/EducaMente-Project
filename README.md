@@ -4,6 +4,9 @@ A simple back-end project that simulates buying books from a library, uses datab
 
 Later on i will put more details.
 
+<!-- Linha Invisível -->
+<p>&nbsp;</p>
+
 ## Tech Stack
 - **Language**: C#
 - **DB**: MySQL Server
