@@ -25,7 +25,6 @@ namespace E_commerce_Project
             using (MySqlCommand cmd = new MySqlCommand(findUserQuery, connection))
             {
                 cmd.Parameters.AddWithValue("@Username", newUser.UserName);
-
                 int count = Convert.ToInt32(cmd.ExecuteScalar());
                 return count > 0;
             }
@@ -48,6 +47,43 @@ namespace E_commerce_Project
                 Console.Clear();
 
                 Console.WriteLine("Usuário registrado com sucesso!");
+            }
+        }
+
+        public string GetPasswordHash(MySqlConnection connection, User loginUser)
+        {
+            string passQuery = "SELECT PasswordHash FROM users WHERE Username = @Username";
+
+            using(MySqlCommand cmd = new MySqlCommand(passQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@Username", loginUser.UserName);
+                return Convert.ToString(cmd.ExecuteScalar());
+            }
+        }
+
+        public User GetUserInfo(MySqlConnection connection, User authenticatedUser)
+        {
+            string getDataQuery = "SELECT Username, Balance FROM users WHERE Username = @Username";
+
+            using (MySqlCommand cmd = new MySqlCommand(getDataQuery, connection)) 
+            {
+                cmd.Parameters.AddWithValue("@Username", authenticatedUser.UserName);
+
+                using (MySqlDataReader reader = cmd.ExecuteReader()) 
+                { 
+                    if (reader.Read())
+                    {
+                        return new User
+                        {
+                            UserName = reader["Username"].ToString(),
+                            Balance = Convert.ToDecimal(reader["Balance"])
+                        };
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
             }
         }
 
