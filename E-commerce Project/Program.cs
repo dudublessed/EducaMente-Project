@@ -25,24 +25,24 @@ namespace Ecommerce
                 try
                 {
                     connection.Open();
-                    Thread.Sleep(1000);
+                    Wait(1);
                     Console.WriteLine("Connection stablished!");
-                    Thread.Sleep(1000);
+                    Wait(1);
 
                     Random rand = new Random(); 
                     int randomValue = rand.Next(300, 4000);
                     decimal choosenBalance = (decimal)randomValue;
 
                     Console.Clear();
-                    Thread.Sleep(2000);
+                    Wait(2);
                     Console.WriteLine("Bem-vindo ao EducaMente!");
                     Console.WriteLine();
-                    Thread.Sleep(2000);
+                    Wait(2);
                     Console.WriteLine("Este é um projeto e-commerce da EducaMente que fornece livros diversos tipos com bons preços para os bons leitores!");
                     Console.WriteLine();
-                    Thread.Sleep(1000);
+                    Wait(2);
 
-                    
+
                     while (true)
                     {
                         string hasAccount = "Você já possui uma conta? (Sim) ou (Não)";
@@ -80,7 +80,7 @@ namespace Ecommerce
                                 {
                                     Console.Clear();
                                     Console.WriteLine("As senhas não coincidem entre si. Tente novamente.");
-                                    Thread.Sleep(2000);
+                                    Wait(2);
                                     Console.Clear();
                                     continue;
                                 }
@@ -109,7 +109,7 @@ namespace Ecommerce
                             {
                                 // (InserUser()) - Chama tal método da classe (User.cs) a qual insere o usuário no banco de dados.
                                 newUser.InsertUser(connection, newUser);
-                                Thread.Sleep(2000);
+                                Wait(2);
                                 Console.Clear();
                             }
 
@@ -119,7 +119,7 @@ namespace Ecommerce
                                 Console.Clear();
                                 Console.WriteLine("Nome de usuário já cadastrado. Por favor, tente novamente.");
                                 Console.WriteLine();
-                                Thread.Sleep(2000);
+                                Wait(2);
                                 Console.Clear();
                                 continue;
                             }
@@ -165,7 +165,7 @@ namespace Ecommerce
                                     {
                                         Console.Clear();
                                         Console.WriteLine("Login bem-sucedido!");
-                                        Thread.Sleep(1500);
+                                        Wait(2);
                                         Console.Clear();
 
                                         User authenticatedUser = loginUser.GetUserInfo(connection, loginUser);
@@ -177,7 +177,7 @@ namespace Ecommerce
                                     else 
                                     {
                                         Console.WriteLine("Senha incorreta. Tente novamente.");
-                                        Thread.Sleep(2000);
+                                        Wait(2);
                                         Console.Clear();
                                         continue;
                                     }
@@ -188,7 +188,7 @@ namespace Ecommerce
                                 {
                                     Console.Clear();
                                     Console.WriteLine("Usuário inexistente. Por favor, tente novamente.");
-                                    Thread.Sleep(2000);
+                                    Wait(2);
                                     Console.Clear();
                                     continue;
                                 }
@@ -199,7 +199,7 @@ namespace Ecommerce
                         else
                         {
                             Console.WriteLine("Opção inválida. Por favor, tente novamente.");
-                            Thread.Sleep(3000);
+                            Wait(3);
                             Console.Clear();
                             continue;
 
@@ -227,6 +227,19 @@ namespace Ecommerce
                 }
             }
 
+        }
+
+        // Função para chamar o Thread.Sleep de forma mais intuitiva e prática.
+        static void Wait(int waitTime)
+        {
+            // Recebe o tempo (waitTime) em segundos para (definedWaitSeconds).
+            TimeSpan definedWaitSeconds = TimeSpan.FromSeconds(waitTime);
+
+            // Transforma o tempo em segundos (definedWaitSeconds) para milissegundos (milliseconds).
+            int milliseconds = (int)definedWaitSeconds.TotalMilliseconds;
+
+            // Executa o bloqueio de código.
+            Thread.Sleep(milliseconds); 
         }
     }
 }
