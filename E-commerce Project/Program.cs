@@ -63,13 +63,13 @@ namespace Ecommerce
                             {
                                 Console.WriteLine("____________________");
                                 Console.WriteLine();
-                                Console.WriteLine("Nome de Usuário: ");
+                                Console.Write("Nome de Usuário: ");
                                 answerUserName = Console.ReadLine();
 
 
-                                Console.WriteLine("Senha: ");
+                                Console.Write("Senha: ");
                                 firstPass = Console.ReadLine();
-                                Console.WriteLine("Confirme a Senha: ");
+                                Console.Write("Confirme a Senha: ");
                                 secondPass = Console.ReadLine();
                                 Console.WriteLine();
                                 Console.WriteLine("____________________");
@@ -136,10 +136,10 @@ namespace Ecommerce
                             {
                                 Console.WriteLine("____________________");
                                 Console.WriteLine();
-                                Console.WriteLine("Nome de Usuário: ");
+                                Console.Write("Nome de Usuário: ");
                                 loginUsername = Console.ReadLine();
 
-                                Console.WriteLine("Senha: ");
+                                Console.Write("Senha: ");
                                 loginPassword = Console.ReadLine();
 
                                 Console.WriteLine();
