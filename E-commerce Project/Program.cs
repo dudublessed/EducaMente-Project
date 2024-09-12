@@ -18,8 +18,8 @@ namespace Ecommerce
             // String de conexão para com o banco de dados MySql. 
             string connectionString = "Server=localhost;Database=e_commerce;User ID=root;Password=Iloveduke123!;Pooling=true;";
 
-            // Cria uma nova conexão com o MySql de acordo com as informações apresentadas na string anterior.
-            // Em seguida tenta um método (try-catch) para executar a porção do código correspondente a um sucesso ou fracasso na conexão para com o banco de dados.
+            // Cria uma nova conexão com o MySql usando a string de conexão fornecida.
+            // Em seguida, tenta abrir a conexão e executa o bloco de código protegido por try-catch para lidar com possíveis falhas na conexão.
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
                 try
@@ -75,7 +75,7 @@ namespace Ecommerce
                                 Console.WriteLine("____________________");
                                 Console.WriteLine();
 
-                                // Confere se as senhas digitadas são diferentes. Se sim, ele reinicia o processo de registro do usuário.
+                                // Verifica se as senhas digitadas são diferentes. Se forem, reinicia o processo de registro do usuário.
                                 if (firstPass != secondPass)
                                 {
                                     Console.Clear();
@@ -204,14 +204,20 @@ namespace Ecommerce
                     Console.WriteLine("Olá!");
                 }
 
-                // Recebe um (Exception error) caso tenha sido detectado durante o bloco (try) do (try-catch).
+                // Recebe uma exceção específica de MySqlException caso ocorra um erro de conexão com o banco de dados.
                 catch (MySqlException ex)
                 {
-                    Console.WriteLine($"Connection failed {ex.Message}");
+                    Console.WriteLine($"Connection failed: {ex.Message}");
                 }
 
+                // Recebe qualquer outra exceção não prevista anteriormente.
+                // Utilizado como um catch-all para erros inesperados que não sejam especificamente tratados pelos outros blocos catch.
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Unexpected error: {ex.Message}");
+                }
 
-                // Após toda a execução do bloco (try-catch) a conexão com o banco de dados é encerrada, tal como a do programa.
+                // O bloco finally é executado após o bloco (try-catch), garantindo que a conexão com o banco de dados seja fechada independentemente de ocorrer uma exceção ou não.
                 finally
                 {
                     connection.Close();
@@ -221,7 +227,7 @@ namespace Ecommerce
 
         }
 
-        // Função para chamar o Thread.Sleep de forma mais intuitiva e prática.
+        // Função para pausar a execução do código por um determinado número de segundos.
         static void Wait(int waitTime)
         {
             // Recebe o tempo (waitTime) em segundos para (definedWaitSeconds).
