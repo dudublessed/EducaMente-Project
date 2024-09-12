@@ -18,66 +18,77 @@ namespace E_commerce_Project
         public decimal Balance { get; set; }
 
 
-        public bool UserExists(MySqlConnection connection, User newUser)
+        public User()
+        {
+
+        }
+
+        public User(string username, string passwordHash, decimal balance = 0)
+        {
+            UserName = username;
+            PasswordHash = passwordHash;
+            Balance = balance;
+        }
+
+
+        public bool UserExists(MySqlConnection connection)
         {
             string findUserQuery = "SELECT COUNT(*) FROM users WHERE Username = @Username";
 
             using (MySqlCommand cmd = new MySqlCommand(findUserQuery, connection))
             {
-                cmd.Parameters.AddWithValue("@Username", newUser.UserName);
+                cmd.Parameters.AddWithValue("@Username", UserName);
                 int count = Convert.ToInt32(cmd.ExecuteScalar());
                 return count > 0;
             }
         }
 
 
-        public void InsertUser(MySqlConnection connection, User newUser)
+        public bool RegisterUser(MySqlConnection connection)
         {
-            string insertQuery = "INSERT INTO users (Username, PasswordHash, Balance) Values (@Username, @PasswordHash, @Balance)";
-
-
-            using(MySqlCommand cmd = new MySqlCommand(insertQuery, connection))
+            if (UserExists(connection))
             {
-                cmd.Parameters.AddWithValue("@Username", newUser.UserName);
-                cmd.Parameters.AddWithValue("@PasswordHash", newUser.PasswordHash);
-                cmd.Parameters.AddWithValue("@Balance", newUser.Balance);
+                return false;
+            }
 
+            string registerUserQuery = "INSERT INTO users (Username, PasswordHash, Balance) VALUES (@Username, @PasswordHash, @Balance)";
+            using (MySqlCommand cmd = new MySqlCommand(registerUserQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@Username", UserName);
+                cmd.Parameters.AddWithValue("@PasswordHash", PasswordHash);
+                cmd.Parameters.AddWithValue("@Balance", Balance);
                 cmd.ExecuteNonQuery();
-
-                Console.Clear();
-
-                Console.WriteLine("Usuário registrado com sucesso!");
+                return true;
             }
         }
 
-        public string GetPasswordHash(MySqlConnection connection, User loginUser)
+
+        public string GetPasswordHash(MySqlConnection connection)
         {
             string passQuery = "SELECT PasswordHash FROM users WHERE Username = @Username";
 
             using(MySqlCommand cmd = new MySqlCommand(passQuery, connection))
             {
-                cmd.Parameters.AddWithValue("@Username", loginUser.UserName);
+                cmd.Parameters.AddWithValue("@Username", UserName);
                 return Convert.ToString(cmd.ExecuteScalar());
             }
         }
 
-        public User GetUserInfo(MySqlConnection connection, User authenticatedUser)
+
+        public User GetUserInfo(MySqlConnection connection)
         {
             string getDataQuery = "SELECT Username, Balance FROM users WHERE Username = @Username";
-
-            using (MySqlCommand cmd = new MySqlCommand(getDataQuery, connection)) 
+            using (MySqlCommand cmd = new MySqlCommand(getDataQuery, connection))
             {
-                cmd.Parameters.AddWithValue("@Username", authenticatedUser.UserName);
-
-                using (MySqlDataReader reader = cmd.ExecuteReader()) 
-                { 
+                cmd.Parameters.AddWithValue("@Username", UserName);
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
                     if (reader.Read())
                     {
-                        return new User
-                        {
-                            UserName = reader["Username"].ToString(),
-                            Balance = Convert.ToDecimal(reader["Balance"])
-                        };
+                        User user = new User();
+                        user.UserName = reader["Username"].ToString();
+                        user.Balance = Convert.ToDecimal(reader["Balance"]);
+                        return user;
                     }
                     else
                     {
@@ -86,6 +97,7 @@ namespace E_commerce_Project
                 }
             }
         }
+
 
     }
 }
