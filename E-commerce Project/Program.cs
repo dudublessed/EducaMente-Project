@@ -84,14 +84,12 @@ namespace Ecommerce
                                     Console.Clear();
                                     continue;
                                 }
+
+                                // Senhas coincidem. Continuando o processo de registro do usuário.
+                                // Resgata o valor inserido em (firstPass) e criptografa usando a biblioteca BCrypt.
+                                hashedPass = BCrypt.Net.BCrypt.HashPassword(firstPass);
+                                break;
                                 
-                                // Confere se as senhas digitadas coincidem. Se sim, ele prossegue com uma nova parte do registro do usuário.
-                                else if (firstPass == secondPass)
-                                {
-                                    // Resgata o valor inserido em (firstPass) e criptografa usando a biblioteca BCrypt.
-                                    hashedPass = BCrypt.Net.BCrypt.HashPassword(firstPass);
-                                    break;
-                                }
                             }
 
                             // Criando uma instância da classe (User.cs) com os dados fornecidos (answerUserName, hashedPass e choosenBalance) para registrar um novo usuário.
@@ -114,20 +112,17 @@ namespace Ecommerce
                             }
 
                             // Nome de usuário já cadastrado no banco de dados. Registro mal sucedido.
-                            else
-                            {
-                                Console.Clear();
-                                Console.WriteLine("Nome de usuário já cadastrado. Por favor, tente novamente.");
-                                Console.WriteLine();
-                                Wait(2);
-                                Console.Clear();
-                                continue;
-                            }
+                            Console.Clear();
+                            Console.WriteLine("Nome de usuário já cadastrado. Por favor, tente novamente.");
+                            Console.WriteLine();
+                            Wait(2);
+                            Console.Clear();
+                            continue;       
 
                         }
 
                         // Usuário já cadastrado. Processo de login do usuário abaixo.
-                        else if (signAnswer.ToLower() == "sim")
+                        if (signAnswer.ToLower() == "sim")
                         {
                             string loginUsername;
                             string loginPassword;
@@ -173,25 +168,22 @@ namespace Ecommerce
                                         Console.WriteLine($"Saldo: {authenticatedUser.Balance}");
                                         break;
                                     }
-                                    // Senhas criptografadas não coincidem entre si. Login mal sucedido.
-                                    else 
-                                    {
-                                        Console.WriteLine("Senha incorreta. Tente novamente.");
-                                        Wait(2);
-                                        Console.Clear();
-                                        continue;
-                                    }
 
-                                }
-                                // Nome de usuário não está cadastrado no banco de dados. Login mal sucedido.
-                                else
-                                {
-                                    Console.Clear();
-                                    Console.WriteLine("Usuário inexistente. Por favor, tente novamente.");
+                                    // Senhas criptografadas não coincidem entre si. Login mal sucedido.
+                                    Console.WriteLine("Senha incorreta. Tente novamente.");
                                     Wait(2);
                                     Console.Clear();
                                     continue;
+
                                 }
+
+                                // Nome de usuário não está cadastrado no banco de dados. Login mal sucedido.
+                                Console.Clear();
+                                Console.WriteLine("Usuário inexistente. Por favor, tente novamente.");
+                                Wait(2);
+                                Console.Clear();
+                                continue;
+                                
                             }
                         }
 
