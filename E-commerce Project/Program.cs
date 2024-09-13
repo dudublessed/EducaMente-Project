@@ -26,17 +26,17 @@ namespace Ecommerce
                     connection.Open();
 
                     Wait(1);
-                    Console.WriteLine("Connection stablished!");
+                    Write("Connection stablished!", true);
                     Wait(1);
 
                     Console.Clear();
                     Wait(2);
-                    Console.WriteLine("Bem-vindo ao EducaMente!");
+                    Write("Bem-vindo ao EducaMente!", true);
                     Console.WriteLine();
                     Wait(2);
 
-                    Console.WriteLine("Este é um projeto e-commerce da EducaMente que fornece livros diversos tipos com bons preços para os bons leitores!");
-                    Console.WriteLine();
+                    Write("Este é um projeto e-commerce da EducaMente que fornece livros diversos tipos com bons preços para os bons leitores!", true);
+                    Write(" ", true);
                     Wait(2);
 
                     while (true)
@@ -72,7 +72,7 @@ namespace Ecommerce
                         // Usuário não selecionou nenhuma das opções fornecidas, a saber, (Sim) ou (Não). Reiniciando tentativa.
                         else
                         {
-                            Console.WriteLine("Opção inválida. Por favor, tente novamente.");
+                            Write("Opção inválida. Por favor, tente novamente.", true);
                             Wait(3);
                             Console.Clear();
                             continue;
@@ -83,27 +83,83 @@ namespace Ecommerce
                     }
 
                     // Login bem-sucedido. Prosseguir aqui!
-                    Console.WriteLine("Olá!");
+                    string selectedCategoryName;
+                    int categoryId = 0;
+
+                    while (true)
+                    {
+                        Write(" ", true);
+                        Write("Selecione uma das categorias de livros abaixo para explorar:", true);
+
+                        List<Category> categories = new Category().GetCategories(connection);
+
+                        Write("____________________", true);
+
+                        foreach (var category in categories)
+                        {
+                            Write(" ", true);
+                            Write($"{category.Name}", true);
+                            Write($"{category.Description}.", true);
+                            Write(" ", true);
+                        }
+
+                        Write("____________________", true);
+                        Write(" ", true);
+
+                        selectedCategoryName = AskForInput("Digite o nome da categoria desejada: ", false);
+
+                        try
+                        {
+                            categoryId = new Category().GetCategoryIdByName(connection, selectedCategoryName);
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Clear();
+                            Write(ex.Message);
+                            Write(" ", true);
+                            Wait(3);
+                        }
+                    }
+
+                    List<Products> products = new Products() { CategoryId = categoryId }.GetProducts(connection);
+
+                    Write("____________________", true);
+
+                    foreach (var product in products)
+                    {
+                        Write(" ", true);
+                        Write($"Nome: {product.Name} ", true);
+                        Write($"Descrição: {product.Description}.", true);
+                        Write($"Autor: {product.Author} ", true);
+                        Write($"Preço: {product.Price:C} ", true);
+                        Write($"Estoque: {product.Stock}", true);
+                        Write(" ", true);
+                    }
+
+                    Write("____________________", true);
+                    Write(" ", true);
+
                 }
 
                 // Recebe uma exceção específica de MySqlException caso ocorra um erro de conexão com o banco de dados.
                 catch (MySqlException ex)
                 {
-                    Console.WriteLine($"Connection failed: {ex.Message}");
+                    Write($"Connection failed: {ex.Message}", true);
                 }
 
                 // Recebe qualquer outra exceção não prevista anteriormente.
                 // Utilizado como um catch-all para erros inesperados que não sejam especificamente tratados pelos outros blocos catch.
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Unexpected error: {ex.Message}");
+                    Write($"Unexpected error: {ex.Message}", true);
                 }
 
                 // O bloco finally é executado após o bloco (try-catch), garantindo que a conexão com o banco de dados seja fechada independentemente de ocorrer uma exceção ou não.
                 finally
                 {
                     connection.Close();
-                    Console.WriteLine("Conexão encerrada.");
+                    Write("Conexão encerrada.", true);
                 }
             }
 
@@ -114,11 +170,11 @@ namespace Ecommerce
         {
             if (useWriteLine)
             {
-                Console.Write(prompt);
+                Console.WriteLine(prompt);
             }
             else
             {
-                Console.WriteLine(prompt);
+                Console.Write(prompt);
             }
         }
 
@@ -134,7 +190,7 @@ namespace Ecommerce
                 Console.Write(prompt);
             }
 
-            return Console.ReadLine();
+            return Console.ReadLine().Trim();
         }
 
         // Função para pausar a execução do código por um determinado número de segundos.
@@ -159,21 +215,21 @@ namespace Ecommerce
 
             while (true)
             {
-                Console.WriteLine("____________________");
-                Console.WriteLine();
+                Write("____________________", true);
+                Write(" ", true);
 
                 userName = AskForInput("Nome de Usuário: ", false);
                 password = AskForInput("Senha: ", false);
                 confirmPassword = AskForInput("Confirme a Senha: ", false);
 
-                Console.WriteLine();
-                Console.WriteLine("____________________");
-                Console.WriteLine();
+                Write(" ", true);
+                Write("____________________", true);
+                Write(" ", true);
 
                 // Verifica se as senhas digitadas são diferentes. Se forem, reinicia o processo de registro do usuário.
                 if (password != confirmPassword)
                 {
-                    Console.WriteLine("As senhas não coincidem entre si. Tente novamente.");
+                    Write("As senhas não coincidem entre si. Tente novamente.", true);
                     Wait(2);
                     Console.Clear();
                     continue;
@@ -189,14 +245,14 @@ namespace Ecommerce
                 // Registrando o usuário no banco de dados
                 if (newUser.RegisterUser(connection))
                 {
-                    Console.WriteLine("Usuário registrado com sucesso!");
+                    Write("Usuário registrado com sucesso!", true);
                     Wait(2);
                     Console.Clear();
                     return;
                 }
 
                 // Nome de usuário já cadastrado no banco de dados. Registro mal sucedido.
-                Console.WriteLine("Nome de usuário já cadastrado. Por favor, tente novamente.");
+                Write("Nome de usuário já cadastrado. Por favor, tente novamente.", true);
                 Wait(2);
                 Console.Clear();
 
@@ -209,15 +265,15 @@ namespace Ecommerce
         {
             while (true)
             {
-                Console.WriteLine("____________________");
-                Console.WriteLine();
+                Write("____________________", true);
+                Write(" ", true);
 
-                string loginUsername = AskForInput("Nome de usuário", false);
+                string loginUsername = AskForInput("Nome de usuário: ", false);
                 string loginPassword = AskForInput("Senha: ", false);
 
-                Console.WriteLine();
-                Console.WriteLine("____________________");
-                Console.WriteLine();
+                Write(" ", true);
+                Write("____________________", true);
+                Write(" ", true); 
 
                 // Criando uma instância da classe User com o nome de usuário e a senha fornecidos para autenticação.
                 User loginUser = new User(loginUsername, loginPassword);
@@ -228,7 +284,7 @@ namespace Ecommerce
                 if (!userExists)
                 {
                     Console.Clear();
-                    Console.WriteLine("Usuário inexistente. Por favor, tente novamente.");
+                    Write("Usuário inexistente. Por favor, tente novamente.", true);
                     Wait(2);
                     Console.Clear();
                     continue;
@@ -243,22 +299,21 @@ namespace Ecommerce
                 // Senhas criptografadas não coincidem entre si. Login mal sucedido.
                 if (!passwordMatches)
                 {
-                    Console.WriteLine("Senha incorreta. Tente novamente.");
+                    Write("Senha incorreta. Tente novamente.", true);
                     Wait(2);
                     Console.Clear();
                     continue;
                 }
 
-                // Senhas criptografadas coincidem entre si. Login bem-sucedido!
-                Console.Clear();
-                Console.WriteLine("Login bem-sucedido!");
-                Wait(2);
-                Console.Clear();
-
                 // (GetUserInfo()) - Chama tal método da classe (User.cs) que recebe as informações (UserName, Balance) do banco de dados de acordo com a instância de login gerada (loginUser).
                 User authenticatedUser = loginUser.GetUserInfo(connection);
-                Console.WriteLine($"Nome de Usuário: {authenticatedUser.UserName}");
-                Console.WriteLine($"Saldo: {authenticatedUser.Balance}");
+
+                // Senhas criptografadas coincidem entre si. Login bem-sucedido!
+                Console.Clear();
+                Write($"Login bem-sucedido! Bem-vindo(a) de volta, {authenticatedUser.UserName}!", true);
+                Wait(1);
+                Write(" ", true);
+                Write($"Seu saldo disponível é: {authenticatedUser.Balance:C}.", true);
                 break;
             }
         }

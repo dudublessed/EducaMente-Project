@@ -17,12 +17,13 @@ namespace E_commerce_Project
         public string PasswordHash { get; set; }
         public decimal Balance { get; set; }
 
-
+        // Construtor vazio.
         public User()
         {
 
         }
 
+        // Construtor com parâmetros.
         public User(string username, string passwordHash, decimal balance = 0)
         {
             UserName = username;
@@ -30,7 +31,7 @@ namespace E_commerce_Project
             Balance = balance;
         }
 
-
+        // (UserExists()) - Método booleano que verifica no banco de dados se o usuário já está cadastrado com base no nome de usuário (Username) fornecido.
         public bool UserExists(MySqlConnection connection)
         {
             string findUserQuery = "SELECT COUNT(*) FROM users WHERE Username = @Username";
@@ -46,11 +47,14 @@ namespace E_commerce_Project
 
         public bool RegisterUser(MySqlConnection connection)
         {
+            // Verifica se o usuário já existe, isto é, se o método booleano UserExists() é True.
             if (UserExists(connection))
             {
+                // Usuário já existe no banco de dados. Retornando False para informar que não é possível registrar tal usuário.
                 return false;
             }
 
+            // Usuário não existe no banco de dados. Os valores inseridos pelo usuário são registrados no banco de dados.
             string registerUserQuery = "INSERT INTO users (Username, PasswordHash, Balance) VALUES (@Username, @PasswordHash, @Balance)";
             using (MySqlCommand cmd = new MySqlCommand(registerUserQuery, connection))
             {
@@ -58,6 +62,8 @@ namespace E_commerce_Project
                 cmd.Parameters.AddWithValue("@PasswordHash", PasswordHash);
                 cmd.Parameters.AddWithValue("@Balance", Balance);
                 cmd.ExecuteNonQuery();
+
+                // Login bem-sucedido. Retorna o valor booleano True para que dê sequência ao código em (Program.cs).
                 return true;
             }
         }
