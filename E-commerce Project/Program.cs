@@ -190,8 +190,10 @@ namespace Ecommerce
                                 Write($"Preço unitário: {item.Price:C}", true);
                                 Write($"Subtotal: {item.Quantity * item.Price:C}", true);
                             }
-                            Write("\n____________________", true);
+                            Write("\n____________________\n", true);
 
+                            // Verificar se o usuário quer adicionar outro item.
+                            AskForInput($"Deseja adicionar outro item? Digite (Sim) ou (Não)", true).ToLower().Trim();
                             // Prosseguir para a compra!
                             break;
                         }
