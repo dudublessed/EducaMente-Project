@@ -12,6 +12,8 @@ namespace Ecommerce
 {
     class Program
     {
+        static int actualUserId;
+
         static void Main(string[] args)
         {
             // String de conexão para com o banco de dados MySql. 
@@ -50,7 +52,7 @@ namespace Ecommerce
                         decimal choosenBalance = (decimal)randomValue;
 
                         // Solicita ao usuário se ele já possui uma conta e converte a resposta para minúsculas para facilitar a comparação.
-                        string signAnswer = AskForInput("Você já possui uma conta? (Sim) ou (Não)", true).ToLower();
+                        string signAnswer = AskForInput("Você já possui uma conta? (Sim) ou (Não)", true).ToLower().Trim();
 
                         Console.Clear();
 
@@ -68,6 +70,7 @@ namespace Ecommerce
                         {
                             // (UserLogin() - Chama tal método da classe (Program.cs) que executa todas as funções em relação ao login do usuário.
                             UserLogin(connection);
+                            Wait(1);
                         }
 
                         // Usuário não selecionou nenhuma das opções fornecidas, a saber, (Sim) ou (Não). Reiniciando tentativa.
@@ -87,6 +90,10 @@ namespace Ecommerce
                     string selectedCategoryName;
                     string selectedProductName;
                     int categoryId = 0;
+                    int productId = 0;
+                    int productQuantity = 0;
+                    decimal productPrice = 0m;
+                    decimal totalAmount = 0m;
 
                     while (true)
                     {
@@ -104,52 +111,100 @@ namespace Ecommerce
 
                         Write("____________________\n", true);
 
-                        selectedCategoryName = AskForInput("Digite o nome da categoria desejada: ", false);
+                        selectedCategoryName = AskForInput("Digite o nome da categoria desejada: ", false).Trim();
 
                         try
                         {
                             categoryId = new Category().GetCategoryIdByName(connection, selectedCategoryName);
-                            break;
+                            
                         }
                         catch (Exception ex)
                         {
                             Console.Clear();
                             Write($"{ex.Message}\n");
                             Wait(3);
+                            Console.Clear();
+                            continue;
                         }
-                    }
+                    
 
-                    List<Products> products = new Products() { CategoryId = categoryId }.GetProducts(connection);
+                        List<Products> products = new Products() { CategoryId = categoryId }.GetProducts(connection);
 
-                    Write("____________________\n", true);
+                         Write("____________________\n", true);
 
-                    foreach (var product in products)
-                    {
-                        Write($"\nNome: {product.Name}", true);
-                        Write($"Descrição: {product.Description}.", true);
-                        Write($"Autor: {product.Author}", true);
-                        Write($"Preço: {product.Price:C}", true);
-                        Write($"Estoque: {product.Stock}\n", true);
-                    }
+                        foreach (var product in products)
+                        {
+                            Write($"\nNome: {product.Name}", true);
+                            Write($"Descrição: {product.Description}.", true);
+                            Write($"Autor: {product.Author}", true);
+                            Write($"Preço: {product.Price:C}", true);
+                            Write($"Estoque: {product.Stock}\n", true);
+                        }
 
-                    Write("____________________\n", true);
+                        Write("____________________\n", true);
 
-                    // CONTINUAR AQUI! DEPOIS DE MOSTRAR OS PRODUTOS!
 
-                    while (true)
-                    {
-                        selectedProductName = AskForInput("Qual livro você gostaria de adquirir dessa categoria?", false);
+                        selectedProductName = AskForInput("Qual livro você gostaria de adquirir dessa categoria? ", false);
+
+                        productQuantity = Convert.ToInt32(AskForInput("Digite a quantidade: ", false).Trim());
 
                         try
                         {
+                            Products product = new Products().GetProductInfo(connection, selectedProductName);
 
+                            productId = product.ProductID;
+                            productPrice = product.Price;
+
+                            totalAmount = (productQuantity * productPrice);
+
+                            Orders newOrder = new Orders
+                            {
+                                TotalAmount = totalAmount,
+                                OrderStatus = Orders.Status.Pending, 
+                                UserId = actualUserId
+                            };
+
+                            newOrder.CreateOrder(connection);
+
+                            List<OrderItems> orderItems = new List<OrderItems> 
+                            {
+                                new OrderItems { OrderId = newOrder.OrderId, ProductId = productId, Quantity = productQuantity, Price = productPrice }
+                            
+                            };
+
+                            foreach (var item in orderItems)
+                            {
+                                item.InsertOrderItems(connection);
+                            }
+
+                            List<OrderItems> itemsInOrder = new OrderItems().GetOrderItems(connection, newOrder.OrderId);
+
+                            Write("\n____________________\n", true);
+                            Write("Itens do Pedido: ", true);
+                            foreach(var item in itemsInOrder)
+                            {
+                                Products productDetails = new Products().GetProductInfo(connection, product.Name);
+
+                                Write($"Produto: {productDetails.Name}", true);
+                                Write($"Quantidade: {item.Quantity}", true);
+                                Write($"Preço unitário: {item.Price:C}", true);
+                                Write($"Subtotal: {item.Quantity * item.Price:C}", true);
+                            }
+                            Write("\n____________________", true);
+
+                            // Prosseguir para a compra!
+                            break;
                         }
                         catch (Exception ex)
                         {
-
+                            Console.Clear();
+                            Write($"{ex.Message}\n");
+                            Wait(5);
+                            Console.Clear();
+                            continue;
                         }
-                    }
 
+                    }
 
                 }
 
@@ -201,7 +256,7 @@ namespace Ecommerce
                 Console.Write(prompt);
             }
 
-            return Console.ReadLine().Trim();
+            return Console.ReadLine();
         }
 
         // Função para pausar a execução do código por um determinado número de segundos.
@@ -228,9 +283,9 @@ namespace Ecommerce
             {
                 Write("____________________\n", true);
 
-                userName = AskForInput("Nome de Usuário: ", false);
-                password = AskForInput("Senha: ", false);
-                confirmPassword = AskForInput("Confirme a Senha: ", false);
+                userName = AskForInput("Nome de Usuário: ", false).Trim();
+                password = AskForInput("Senha: ", false).Trim();
+                confirmPassword = AskForInput("Confirme a Senha: ", false).Trim();
 
                 Write("\n____________________\n", true);
 
@@ -276,8 +331,8 @@ namespace Ecommerce
             {
                 Write("____________________\n", true);
 
-                string loginUsername = AskForInput("Nome de usuário: ", false);
-                string loginPassword = AskForInput("Senha: ", false);
+                string loginUsername = AskForInput("Nome de usuário: ", false).Trim();
+                string loginPassword = AskForInput("Senha: ", false).Trim();
 
                 Write("\n____________________\n", true);
 
@@ -313,10 +368,11 @@ namespace Ecommerce
 
                 // (GetUserInfo()) - Chama tal método da classe (User.cs) que recebe as informações (UserName, Balance) do banco de dados de acordo com a instância de login gerada (loginUser).
                 User authenticatedUser = loginUser.GetUserInfo(connection);
+                actualUserId = authenticatedUser.UserId;
 
                 // Senhas criptografadas coincidem entre si. Login bem-sucedido!
                 Console.Clear();
-                Write($"Login bem-sucedido! Bem-vindo(a) de volta, {authenticatedUser.UserName}!\n", true);
+                Write($"Login bem-sucedido! Bem-vindo(a), {authenticatedUser.UserName}!\n", true);
                 Wait(1);
                 Write($"Seu saldo disponível é: {authenticatedUser.Balance:C}.\n", true);
                 break;

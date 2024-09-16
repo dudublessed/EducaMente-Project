@@ -20,5 +20,22 @@ namespace E_commerce_Project
         }
         public Status OrderStatus { get; set; }
         public int UserId { get; set; }
+
+
+        public void CreateOrder(MySqlConnection connection)
+        {
+            string createOrderQuery = "INSERT INTO orders (OrderDate, TotalAmount, OrderStatus, UserId) VALUES (@OrderDate, @TotalAmount, @OrderStatus, @UserId)";
+
+            using (MySqlCommand cmd = new MySqlCommand(createOrderQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@OrderDate", DateTime.Now);
+                cmd.Parameters.AddWithValue("@TotalAmount", TotalAmount);
+                cmd.Parameters.AddWithValue("@OrderStatus", OrderStatus.ToString());
+                cmd.Parameters.AddWithValue("@UserId", UserId);
+
+                cmd.ExecuteNonQuery();
+                OrderId = (int)cmd.LastInsertedId;
+            }
+        }
     }
 }

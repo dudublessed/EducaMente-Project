@@ -83,7 +83,7 @@ namespace E_commerce_Project
 
         public User GetUserInfo(MySqlConnection connection)
         {
-            string getDataQuery = "SELECT Username, Balance FROM users WHERE Username = @Username";
+            string getDataQuery = "SELECT UserId, Username, Balance FROM users WHERE Username = @Username";
             using (MySqlCommand cmd = new MySqlCommand(getDataQuery, connection))
             {
                 cmd.Parameters.AddWithValue("@Username", UserName);
@@ -92,6 +92,7 @@ namespace E_commerce_Project
                     if (reader.Read())
                     {
                         User user = new User();
+                        user.UserId = Convert.ToInt32(reader["UserId"]);
                         user.UserName = reader["Username"].ToString();
                         user.Balance = Convert.ToDecimal(reader["Balance"]);
                         return user;

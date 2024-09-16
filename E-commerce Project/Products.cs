@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -46,6 +47,34 @@ namespace E_commerce_Project
                 }
             }
             return productsList;
+        }
+
+        public Products GetProductInfo (MySqlConnection connection, string productName)
+        {
+            string getProductQuery = "SELECT ProductId, Name, Price, Stock FROM products WHERE Name = @Name";
+
+            using (MySqlCommand cmd = new MySqlCommand(getProductQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@Name", productName);
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return new Products
+                        {
+                            ProductID = Convert.ToInt32(reader["ProductId"]),
+                            Name = reader["Name"].ToString(),
+                            Price = Convert.ToDecimal(reader["Price"]),
+                            Stock = Convert.ToInt32(reader["Stock"])
+                        };
+                    }
+                    else
+                    {
+                        throw new Exception("Produto não encontrado. Por favor, tente novamente.");
+                    }
+                }
+            }
+
         }
     }
 
