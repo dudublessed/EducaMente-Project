@@ -28,15 +28,16 @@ namespace Ecommerce
                     Wait(1);
                     Write("Connection stablished!", true);
                     Wait(1);
-
                     Console.Clear();
-                    Wait(2);
-                    Write("Bem-vindo ao EducaMente!", true);
-                    Console.WriteLine();
+
                     Wait(2);
 
-                    Write("Este é um projeto e-commerce da EducaMente que fornece livros diversos tipos com bons preços para os bons leitores!", true);
-                    Write(" ", true);
+                    Write("Bem-vindo ao EducaMente!\n", true);
+
+                    Wait(2);
+
+                    Write("Este é um projeto e-commerce da EducaMente que fornece livros diversos tipos com bons preços para os bons leitores!\n", true);
+
                     Wait(2);
 
                     while (true)
@@ -84,27 +85,24 @@ namespace Ecommerce
 
                     // Login bem-sucedido. Prosseguir aqui!
                     string selectedCategoryName;
+                    string selectedProductName;
                     int categoryId = 0;
 
                     while (true)
                     {
-                        Write(" ", true);
                         Write("Selecione uma das categorias de livros abaixo para explorar:", true);
 
                         List<Category> categories = new Category().GetCategories(connection);
 
-                        Write("____________________", true);
+                        Write("____________________\n", true);
 
                         foreach (var category in categories)
                         {
-                            Write(" ", true);
-                            Write($"{category.Name}", true);
-                            Write($"{category.Description}.", true);
-                            Write(" ", true);
+                            Write($"\n{category.Name}", true);
+                            Write($"{category.Description}.\n", true);
                         }
 
-                        Write("____________________", true);
-                        Write(" ", true);
+                        Write("____________________\n", true);
 
                         selectedCategoryName = AskForInput("Digite o nome da categoria desejada: ", false);
 
@@ -116,29 +114,42 @@ namespace Ecommerce
                         catch (Exception ex)
                         {
                             Console.Clear();
-                            Write(ex.Message);
-                            Write(" ", true);
+                            Write($"{ex.Message}\n");
                             Wait(3);
                         }
                     }
 
                     List<Products> products = new Products() { CategoryId = categoryId }.GetProducts(connection);
 
-                    Write("____________________", true);
+                    Write("____________________\n", true);
 
                     foreach (var product in products)
                     {
-                        Write(" ", true);
-                        Write($"Nome: {product.Name} ", true);
+                        Write($"\nNome: {product.Name}", true);
                         Write($"Descrição: {product.Description}.", true);
-                        Write($"Autor: {product.Author} ", true);
-                        Write($"Preço: {product.Price:C} ", true);
-                        Write($"Estoque: {product.Stock}", true);
-                        Write(" ", true);
+                        Write($"Autor: {product.Author}", true);
+                        Write($"Preço: {product.Price:C}", true);
+                        Write($"Estoque: {product.Stock}\n", true);
                     }
 
-                    Write("____________________", true);
-                    Write(" ", true);
+                    Write("____________________\n", true);
+
+                    // CONTINUAR AQUI! DEPOIS DE MOSTRAR OS PRODUTOS!
+
+                    while (true)
+                    {
+                        selectedProductName = AskForInput("Qual livro você gostaria de adquirir dessa categoria?", false);
+
+                        try
+                        {
+
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+                    }
+
 
                 }
 
@@ -215,16 +226,14 @@ namespace Ecommerce
 
             while (true)
             {
-                Write("____________________", true);
-                Write(" ", true);
+                Write("____________________\n", true);
 
                 userName = AskForInput("Nome de Usuário: ", false);
                 password = AskForInput("Senha: ", false);
                 confirmPassword = AskForInput("Confirme a Senha: ", false);
 
-                Write(" ", true);
-                Write("____________________", true);
-                Write(" ", true);
+                Write("\n____________________\n", true);
+
 
                 // Verifica se as senhas digitadas são diferentes. Se forem, reinicia o processo de registro do usuário.
                 if (password != confirmPassword)
@@ -265,15 +274,12 @@ namespace Ecommerce
         {
             while (true)
             {
-                Write("____________________", true);
-                Write(" ", true);
+                Write("____________________\n", true);
 
                 string loginUsername = AskForInput("Nome de usuário: ", false);
                 string loginPassword = AskForInput("Senha: ", false);
 
-                Write(" ", true);
-                Write("____________________", true);
-                Write(" ", true); 
+                Write("\n____________________\n", true);
 
                 // Criando uma instância da classe User com o nome de usuário e a senha fornecidos para autenticação.
                 User loginUser = new User(loginUsername, loginPassword);
@@ -310,10 +316,9 @@ namespace Ecommerce
 
                 // Senhas criptografadas coincidem entre si. Login bem-sucedido!
                 Console.Clear();
-                Write($"Login bem-sucedido! Bem-vindo(a) de volta, {authenticatedUser.UserName}!", true);
+                Write($"Login bem-sucedido! Bem-vindo(a) de volta, {authenticatedUser.UserName}!\n", true);
                 Wait(1);
-                Write(" ", true);
-                Write($"Seu saldo disponível é: {authenticatedUser.Balance:C}.", true);
+                Write($"Seu saldo disponível é: {authenticatedUser.Balance:C}.\n", true);
                 break;
             }
         }
