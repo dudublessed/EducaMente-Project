@@ -31,9 +31,50 @@ namespace E_commerce_Project
             }
         }
 
+        public bool ItemExists (MySqlConnection connection, int productId, int orderId)
+        {
+            string searchQuery = "SELECT EXISTS (SELECT 1 FROM orderitems WHERE ProductId = @ProductId AND OrderId = @OrderId)";
+
+            using (MySqlCommand cmd = new MySqlCommand(searchQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@ProductId", productId);
+                cmd.Parameters.AddWithValue("@OrderId", orderId);
+                return Convert.ToBoolean(cmd.ExecuteScalar());
+            }
+
+        }
+
+        public void RemoveOrderItems (MySqlConnection connection, int productId, int orderId)
+        {
+            string removeOrderItemQuery = "DELETE FROM orderitems WHERE ProductId = @ProductId AND OrderId = @OrderId";
+
+            using(MySqlCommand cmd = new MySqlCommand(removeOrderItemQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@ProductId", productId);
+                cmd.Parameters.AddWithValue("@OrderId", orderId);
+
+                cmd.ExecuteNonQuery();
+            }
+
+        }
+
+        public int GetOrderId (MySqlConnection connection, int productId)
+        {
+            string getOrderIdQuery = "SELECT OrderId FROM orderitems WHERE ProductId = @ProductId";
+
+            using(MySqlCommand cmd = new MySqlCommand(getOrderIdQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@ProductId", productId);
+
+                int orderId = Convert.ToInt32(cmd.ExecuteScalar());
+
+                return orderId;
+            }
+        }
+
         public List<OrderItems> GetOrderItems (MySqlConnection connection, int orderId)
         {
-            string getOrderItemQuery = "SELECT Quantity, Price, ProductId FROM OrderItems WHERE OrderId = @OrderId";
+            string getOrderItemQuery = "SELECT Quantity, Price, ProductId FROM orderitems WHERE OrderId = @OrderId";
             List<OrderItems> orderItems = new List<OrderItems>();
 
             using (MySqlCommand cmd = new MySqlCommand(getOrderItemQuery, connection))
