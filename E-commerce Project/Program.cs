@@ -338,7 +338,7 @@ namespace Ecommerce
                             Write("____________________\n", true);
 
 
-                            // Prosseguir para a compra!
+                            // Prosseguir com a compra!
 
                             break;
 
