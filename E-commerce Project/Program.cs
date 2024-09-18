@@ -89,11 +89,27 @@ namespace Ecommerce
                     // Login bem-sucedido. Prosseguir aqui!
                     string selectedCategoryName;
                     string selectedProductName;
+
                     int categoryId = 0;
+                    int orderId = 0;
                     int productId = 0;
                     int productQuantity = 0;
+
                     decimal productPrice = 0m;
                     decimal totalAmount = 0m;
+
+                    OrderItems orderItemsHandler = new OrderItems();
+
+                    Orders newOrder = new Orders
+                    {
+                        TotalAmount = totalAmount,  
+                        OrderStatus = Orders.Status.Pending,
+                        UserId = actualUserId
+                    };
+
+                    newOrder.CreateOrder(connection);
+
+                    orderId = newOrder.OrderId;
 
                     while (true)
                     {
@@ -146,60 +162,190 @@ namespace Ecommerce
 
                         selectedProductName = AskForInput("Qual livro você gostaria de adquirir dessa categoria? ", false);
 
-                        productQuantity = Convert.ToInt32(AskForInput("Digite a quantidade: ", false).Trim());
+                        productQuantity = Convert.ToInt32(AskForInput("\nQuantidade: ", false).Trim());
 
                         try
                         {
                             Products product = new Products().GetProductInfo(connection, selectedProductName);
 
-                            productId = product.ProductID;
+                            productId = product.ProductId;
                             productPrice = product.Price;
 
-                            totalAmount = (productQuantity * productPrice);
-
-                            Orders newOrder = new Orders
+                            var newOrderItem = new OrderItems
                             {
-                                TotalAmount = totalAmount,
-                                OrderStatus = Orders.Status.Pending, 
-                                UserId = actualUserId
+                                OrderId = orderId,
+                                ProductId = productId,
+                                Quantity = productQuantity,
+                                Price = productPrice
                             };
+                            newOrderItem.InsertOrderItems(connection);
 
-                            newOrder.CreateOrder(connection);
+                            totalAmount = 0m;
 
-                            List<OrderItems> orderItems = new List<OrderItems> 
-                            {
-                                new OrderItems { OrderId = newOrder.OrderId, ProductId = productId, Quantity = productQuantity, Price = productPrice }
-                            
-                            };
-
-                            foreach (var item in orderItems)
-                            {
-                                item.InsertOrderItems(connection);
-                            }
-
-                            List<OrderItems> itemsInOrder = new OrderItems().GetOrderItems(connection, newOrder.OrderId);
+                            List<OrderItems> itemsInOrder = new OrderItems().GetOrderItems(connection, orderId);
 
                             Write("\n____________________\n", true);
-                            Write("Itens do Pedido: ", true);
+                            Write($"Itens do Pedido [{orderId}]: \n", true);
                             foreach(var item in itemsInOrder)
                             {
-                                Products productDetails = new Products().GetProductInfo(connection, product.Name);
+                                Products productDetails = new Products().GetProductById(connection, item.ProductId);
 
                                 Write($"Produto: {productDetails.Name}", true);
                                 Write($"Quantidade: {item.Quantity}", true);
-                                Write($"Preço unitário: {item.Price:C}", true);
-                                Write($"Subtotal: {item.Quantity * item.Price:C}", true);
-                            }
-                            Write("\n____________________\n", true);
+                                Write($"Preço unitário: {item.Price:C}\n", true);
 
-                            // Verificar se o usuário quer adicionar outro item.
-                            AskForInput($"Deseja adicionar outro item? Digite (Sim) ou (Não)", true).ToLower().Trim();
+                                totalAmount += item.Quantity * item.Price;
+
+                            }
+                            newOrder.UpdateOrderTotalAmount(connection, totalAmount);
+
+                            Write($"Subtotal: {totalAmount:C}\n", true);
+                            Write("____________________\n", true);
+
+                            string addItemAnswer;
+                            string editOrderAnswer;
+                            string removeAnotherItemAnswer;
+                            string itemToRemove;
+
+
+                            while (true)
+                            {
+                                addItemAnswer = AskForInput($"Deseja adicionar outro item? Digite (Sim) ou (Não)", true).ToLower().Trim();
+
+                                if (addItemAnswer == "sim" || addItemAnswer == "não")
+                                {
+                                    break;  
+                                }
+
+                                Write("\nOpção inválida. Por favor, tente novamente.", true);
+                                Wait(3);
+                                continue;
+
+                            }
+
+
+                            if (addItemAnswer == "sim")
+                            {
+                                Console.Clear();
+                                Wait(1);
+                                continue;
+                            }
+
+
+                            while(true)
+                            {
+                                 editOrderAnswer = AskForInput($"\nDeseja remover algum item do seu pedido? Digite (Sim) ou (Não)", true).ToLower().Trim();
+
+                                 if (editOrderAnswer == "sim" || editOrderAnswer == "não")
+                                 {
+                                        break; 
+                                 }
+
+                                 Write("\nOpção inválida. Por favor, tente novamente.", true);
+                                 Wait(3);
+                                 continue;
+                            }
+
+                            if (editOrderAnswer == "sim")
+                            {
+                                while (true)
+                                {
+                                    itemToRemove = AskForInput($"\nDigite o nome do item que deseja remover: ", false);
+
+                                    product.GetProductInfo(connection, itemToRemove);
+
+                                    productId = product.ProductId;
+                                    productPrice = product.Price;
+
+                                    bool itemExists = orderItemsHandler.ItemExists(connection, productId, orderId);
+
+
+                                    if (!itemExists)
+                                    {
+                                        Write($"\nEsse item não está em seu carrinho. Tente novamente.", true);
+                                        Wait(3);
+                                        continue;
+                                    }
+
+                                    orderItemsHandler.RemoveOrderItems(connection, productId, orderId);
+
+                                    itemsInOrder.RemoveAll(item => item.ProductId == productId);
+
+                                    Write($"\n{itemToRemove} foi removido com sucesso!\n", true);
+
+                                    totalAmount -= productPrice;
+                                    newOrder.UpdateOrderTotalAmount(connection, totalAmount);
+
+                                    itemsInOrder = orderItemsHandler.GetOrderItems(connection, newOrder.OrderId);
+
+                                    Write("\n____________________\n", true);
+                                    Write($"Itens do Pedido: [{orderId}]: \n", true);
+                                    foreach (var item in itemsInOrder)
+                                    {
+                                        Products productDetails = new Products().GetProductById(connection, item.ProductId);
+
+                                        Write($"Produto: {productDetails.Name}", true);
+                                        Write($"Quantidade: {item.Quantity}", true);
+                                        Write($"Preço unitário: {item.Price:C}\n", true);
+
+
+                                    }
+                                    Write($"Subtotal: {totalAmount:C}\n", true);
+                                    Write("____________________\n", true);
+
+                                    while (true)
+                                    {
+                                        removeAnotherItemAnswer = AskForInput($"\nDeseja remover outro item? Digite (Sim) ou (Não)", true).ToLower().Trim();
+
+                                        if (removeAnotherItemAnswer == "sim" || removeAnotherItemAnswer == "não")
+                                        {
+                                            break;
+                                        }
+                                        else if (removeAnotherItemAnswer != "sim")
+                                        {
+                                            Write("\nOpção inválida. Por favor, tente novamente.", true);
+                                            Wait(3);
+                                            continue;
+                                        }
+                                    }
+
+                                    if (removeAnotherItemAnswer == "sim")
+                                    {
+                                        continue;
+                                    }
+
+                                    
+                                    break;
+
+                                }
+                            }
+
+                            itemsInOrder = orderItemsHandler.GetOrderItems(connection, newOrder.OrderId);
+
+                            Write("\n____________________\n", true);
+                            Write($"Carrinho: [{orderId}]: \n", true);
+                            foreach (var item in itemsInOrder)
+                            {
+                                Products productDetails = new Products().GetProductById(connection, item.ProductId);
+
+                                Write($"Produto: {productDetails.Name}", true);
+                                Write($"Quantidade: {item.Quantity}", true);
+                                Write($"Preço unitário: {item.Price:C}\n", true);
+
+
+                            }
+                            Write($"Subtotal: {totalAmount:C}\n", true);
+                            Write("____________________\n", true);
+
+
                             // Prosseguir para a compra!
+
                             break;
+
                         }
                         catch (Exception ex)
                         {
-                            Console.Clear();
+
                             Write($"{ex.Message}\n");
                             Wait(5);
                             Console.Clear();

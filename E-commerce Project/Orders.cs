@@ -37,5 +37,18 @@ namespace E_commerce_Project
                 OrderId = (int)cmd.LastInsertedId;
             }
         }
+
+        public void UpdateOrderTotalAmount(MySqlConnection connection, decimal totalAmount)
+        {
+            string updateOrderTotalAmountQuery = "UPDATE orders SET TotalAmount = @TotalAmount WHERE OrderId = @OrderId";
+
+            using(MySqlCommand cmd = new MySqlCommand (updateOrderTotalAmountQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@TotalAmount", totalAmount);
+                cmd.Parameters.AddWithValue("@OrderId", OrderId);
+
+                cmd.ExecuteNonQuery();
+            }
+        }
     }
 }

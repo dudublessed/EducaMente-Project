@@ -10,7 +10,7 @@ namespace E_commerce_Project
 {
     internal class Products
     {
-        public int ProductID { get; set; }
+        public int ProductId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Author { get; set; }
@@ -62,7 +62,36 @@ namespace E_commerce_Project
                     {
                         return new Products
                         {
-                            ProductID = Convert.ToInt32(reader["ProductId"]),
+                            ProductId = Convert.ToInt32(reader["ProductId"]),
+                            Name = reader["Name"].ToString(),
+                            Price = Convert.ToDecimal(reader["Price"]),
+                            Stock = Convert.ToInt32(reader["Stock"])
+                        };
+                    }
+                    else
+                    {
+                        throw new Exception("Produto não encontrado. Por favor, tente novamente.");
+                    }
+                }
+            }
+
+        }
+
+
+        public Products GetProductById(MySqlConnection connection, int productId)
+        {
+            string getProductQuery = "SELECT ProductId, Name, Price, Stock FROM products WHERE ProductId = @ProductId";
+
+            using (MySqlCommand cmd = new MySqlCommand(getProductQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@ProductId", productId);
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return new Products
+                        {
+                            ProductId = Convert.ToInt32(reader["ProductId"]),
                             Name = reader["Name"].ToString(),
                             Price = Convert.ToDecimal(reader["Price"]),
                             Stock = Convert.ToInt32(reader["Stock"])
