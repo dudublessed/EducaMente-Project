@@ -78,6 +78,7 @@ namespace E_commerce_Project
         }
 
 
+        // Changes...
         public Products GetProductById(MySqlConnection connection, int productId)
         {
             string getProductQuery = "SELECT ProductId, Name, Price, Stock FROM products WHERE ProductId = @ProductId";
