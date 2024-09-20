@@ -105,6 +105,19 @@ namespace E_commerce_Project
             }
         }
 
+        public void CartPurchase(MySqlConnection connection, decimal userBalance, int actualUserId)
+        {
+            string cartPurchaseQuery = "UPDATE users SET Balance = @Balance WHERE UserId = @UserId";
+
+            using(MySqlCommand cmd = new MySqlCommand(cartPurchaseQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@Balance", userBalance);
+                cmd.Parameters.AddWithValue("UserId", actualUserId);
+
+                cmd.ExecuteNonQuery();
+            }
+        }
+
 
     }
 }

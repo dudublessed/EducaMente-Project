@@ -13,11 +13,13 @@ namespace Ecommerce
     class Program
     {
         static int actualUserId;
-
+        static decimal userBalance;
         static void Main(string[] args)
         {
             // String de conexão para com o banco de dados MySql. 
             string connectionString = "Server=localhost;Database=e_commerce;User ID=root;Password=Iloveduke123!;Pooling=true;";
+
+            User authenticatedUser = new User();
 
             // Cria uma nova conexão com o MySql usando a string de conexão fornecida.
             // Em seguida, tenta abrir a conexão e executa o bloco de código protegido por try-catch para lidar com possíveis falhas na conexão.
@@ -69,7 +71,7 @@ namespace Ecommerce
                         if (signAnswer == "sim")
                         {
                             // (UserLogin() - Chama tal método da classe (Program.cs) que executa todas as funções em relação ao login do usuário.
-                            UserLogin(connection);
+                            UserLogin(connection, authenticatedUser);
                             Wait(1);
                         }
 
@@ -148,26 +150,33 @@ namespace Ecommerce
 
                          Write("____________________\n", true);
 
-                        foreach (var product in products)
+                        foreach (var theProduct in products)
                         {
-                            Write($"\nNome: {product.Name}", true);
-                            Write($"Descrição: {product.Description}.", true);
-                            Write($"Autor: {product.Author}", true);
-                            Write($"Preço: {product.Price:C}", true);
-                            Write($"Estoque: {product.Stock}\n", true);
+                            Write($"\nNome: {theProduct.Name}", true);
+                            Write($"Descrição: {theProduct.Description}.", true);
+                            Write($"Autor: {theProduct.Author}", true);
+                            Write($"Preço: {theProduct.Price:C}", true);
+                            Write($"Estoque: {theProduct.Stock}\n", true);
                         }
 
                         Write("____________________\n", true);
-
 
                         selectedProductName = AskForInput("Qual livro você gostaria de adquirir dessa categoria? ", false);
 
                         productQuantity = Convert.ToInt32(AskForInput("\nQuantidade: ", false).Trim());
 
+                        Products product = new Products().GetProductInfo(connection, selectedProductName);
+
+
+                        if (!product.IsStockAvailable(connection, productQuantity)) 
+                        {
+                            Write($"\nO livro {selectedProductName} está fora de estoque. Por favor, tente novamente.\n");
+                            Wait(2);
+                            continue;
+                        }
+
                         try
                         {
-                            Products product = new Products().GetProductInfo(connection, selectedProductName);
-
                             productId = product.ProductId;
                             productPrice = product.Price;
 
@@ -301,7 +310,7 @@ namespace Ecommerce
                                         {
                                             break;
                                         }
-                                        else if (removeAnotherItemAnswer != "sim")
+                                        else
                                         {
                                             Write("\nOpção inválida. Por favor, tente novamente.", true);
                                             Wait(3);
@@ -338,15 +347,72 @@ namespace Ecommerce
                             Write("____________________\n", true);
 
 
-                            // Prosseguir com a compra!
+                            string wantToBuyAnswer;
+                            decimal userAfterPurchaseBalance;
 
-                            break;
+                            while (true)
+                            {
+                                wantToBuyAnswer = AskForInput($"Deseja prosseguir com a compra? Digite (Sim) ou (Não).", true).ToLower().Trim();
+
+                                if (wantToBuyAnswer == "sim" || wantToBuyAnswer == "não")
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    Write("\nOpção inválida. Por favor, tente novamente.", true);
+                                    Wait(3);
+                                    continue;
+                                }
+                            }
+
+                            // Usuário não deseja prosseguir com a compra, cancelando-a e encerrando o programa.
+                            if (wantToBuyAnswer == "não")
+                            {
+                                Write("\nEntendido! Agradecemos sua visita...", true);
+                                Wait(2);
+                                Write("Encerraremos o programa e cancelaremos a sua compra.", true);
+                                newOrder.CancelPurchase(connection, orderId);
+                                Wait(2);
+                                Environment.Exit(0);
+                            }
+
+                            // Usuário deseja prosseguir com a compra.
+
+                            // Usuário não tem saldo suficiente para adquirir os produtos do carrinho, cancelando-a e encerrando o programa.
+
+                            if(userBalance < totalAmount)
+                            {
+                                Write("\nSeu saldo é insuficiente para completar a compra...\n", true);
+                                Wait(2);
+                                Write("Encerraremos o programa e cancelaremos a sua compra.", true);
+                                newOrder.CancelPurchase(connection, orderId);
+                                Wait(2);
+                                Environment.Exit(0);
+                            }
+
+                            // Usuário tem saldo suficiente para adquirir os produtos do carrinho, prosseguindo com a conclusão da compra e encerramento do programa.
+                            userBalance -= totalAmount;
+                            newOrder.CompletePurchase(connection, orderId);
+                            authenticatedUser.CartPurchase(connection, userBalance, actualUserId);
+
+                            foreach(var item in itemsInOrder)
+                            {
+                                product.GetProductById(connection, item.ProductId);
+                                product.UpdateProductStock(connection, productId, productQuantity);
+
+                            }
+
+                            Write($"\nCompra efetuada com sucesso!", true);
+                            Write($"Muito obrigado por utilizar este programa!\n");
+                            Wait(3);
+                            Environment.Exit(0);
 
                         }
                         catch (Exception ex)
                         {
 
-                            Write($"{ex.Message}\n");
+                            Write($"\n{ex.Message}\n");
                             Wait(5);
                             Console.Clear();
                             continue;
@@ -473,8 +539,9 @@ namespace Ecommerce
         }
 
         
-        static void UserLogin(MySqlConnection connection)
+        static void UserLogin(MySqlConnection connection, User authenticatedUser)
         {
+
             while (true)
             {
                 Write("____________________\n", true);
@@ -515,8 +582,11 @@ namespace Ecommerce
                 }
 
                 // (GetUserInfo()) - Chama tal método da classe (User.cs) que recebe as informações (UserName, Balance) do banco de dados de acordo com a instância de login gerada (loginUser).
-                User authenticatedUser = loginUser.GetUserInfo(connection);
+                authenticatedUser = loginUser.GetUserInfo(connection);
+
                 actualUserId = authenticatedUser.UserId;
+
+                userBalance = authenticatedUser.Balance;
 
                 // Senhas criptografadas coincidem entre si. Login bem-sucedido!
                 Console.Clear();
@@ -525,6 +595,7 @@ namespace Ecommerce
                 Write($"Seu saldo disponível é: {authenticatedUser.Balance:C}.\n", true);
                 break;
             }
+
         }
 
     }

@@ -78,7 +78,6 @@ namespace E_commerce_Project
         }
 
 
-        // Changes...
         public Products GetProductById(MySqlConnection connection, int productId)
         {
             string getProductQuery = "SELECT ProductId, Name, Price, Stock FROM products WHERE ProductId = @ProductId";
@@ -105,6 +104,22 @@ namespace E_commerce_Project
                 }
             }
 
+        }
+
+        public bool IsStockAvailable(MySqlConnection connection, int quantity)
+        {
+            return Stock >= quantity;
+        }
+
+        public void UpdateProductStock(MySqlConnection connection, int productId, int quantity)
+        {
+            string query = "UPDATE products SET Stock = Stock - @Quantity WHERE ProductId = @ProductId";
+            using (MySqlCommand cmd = new MySqlCommand(query, connection))
+            {
+                cmd.Parameters.AddWithValue("@ProductId", productId);
+                cmd.Parameters.AddWithValue("@Quantity", quantity);
+                cmd.ExecuteNonQuery();
+            }
         }
     }
 
