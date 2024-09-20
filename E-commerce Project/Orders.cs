@@ -38,6 +38,32 @@ namespace E_commerce_Project
             }
         }
 
+        public void CancelPurchase(MySqlConnection connection, int orderId)
+        {
+            string cancelPurchase = "UPDATE orders SET OrderStatus = @OrderStatus WHERE OrderId = @OrderId";
+
+            using (MySqlCommand cmd = new MySqlCommand(cancelPurchase, connection))
+            {
+                cmd.Parameters.AddWithValue("@OrderStatus", "Cancelled");
+                cmd.Parameters.AddWithValue("@OrderId", orderId);
+
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void CompletePurchase(MySqlConnection connection, int orderId)
+        {
+            string completePurchase = "UPDATE orders SET OrderStatus = @OrderStatus WHERE OrderId = @OrderId";
+
+            using(MySqlCommand cmd = new MySqlCommand(completePurchase, connection))
+            {
+                cmd.Parameters.AddWithValue("@OrderStatus", "Completed");
+                cmd.Parameters.AddWithValue("@OrderId", orderId);
+
+                cmd.ExecuteNonQuery();
+            }
+        }
+
         public void UpdateOrderTotalAmount(MySqlConnection connection, decimal totalAmount)
         {
             string updateOrderTotalAmountQuery = "UPDATE orders SET TotalAmount = @TotalAmount WHERE OrderId = @OrderId";
