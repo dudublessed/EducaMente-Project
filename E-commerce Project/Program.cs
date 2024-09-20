@@ -411,8 +411,8 @@ namespace Ecommerce
                         }
                         catch (Exception ex)
                         {
-
-                            Write($"\n{ex.Message}\n");
+                            Console.Clear();
+                            Write($"{ex.Message}\n");
                             Wait(5);
                             Console.Clear();
                             continue;
