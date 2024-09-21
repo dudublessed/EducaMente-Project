@@ -88,6 +88,10 @@ namespace Ecommerce
                         break;
                     }
 
+                    //
+                    // Divisão entre processos...
+                    //
+
                     // Login bem-sucedido. Prosseguir aqui!
                     string selectedCategoryName;
                     string selectedProductName;
@@ -100,42 +104,50 @@ namespace Ecommerce
                     decimal productPrice = 0m;
                     decimal totalAmount = 0m;
 
+                    // Cria uma instância de OrderItems para manipulação de itens do pedido.
                     OrderItems orderItemsHandler = new OrderItems();
 
+                    // Cria uma nova instância de Orders e define propriedades iniciais.
                     Orders newOrder = new Orders
                     {
                         TotalAmount = totalAmount,  
-                        OrderStatus = Orders.Status.Pending,
+                        OrderStatus = Orders.Status.Pending, 
                         UserId = actualUserId
                     };
 
+                    // Cria o pedido no banco de dados
                     newOrder.CreateOrder(connection);
 
+                    // Obtém o ID do pedido recém-criado
                     orderId = newOrder.OrderId;
 
+                    // Inicia um loop para permitir que o usuário selecione uma categoria de livros.
                     while (true)
                     {
                         Write("Selecione uma das categorias de livros abaixo para explorar:", true);
 
+                        // Obtém a lista de categorias do banco de dados.
                         List<Category> categories = new Category().GetCategories(connection);
 
+                        // Exibe a lista de categorias
                         Write("____________________\n", true);
-
                         foreach (var category in categories)
                         {
                             Write($"\n{category.Name}", true);
                             Write($"{category.Description}.\n", true);
                         }
-
                         Write("____________________\n", true);
 
                         selectedCategoryName = AskForInput("Digite o nome da categoria desejada: ", false).Trim();
 
+                        // Obtém o ID da categoria com base no nome fornecido.
                         try
                         {
                             categoryId = new Category().GetCategoryIdByName(connection, selectedCategoryName);
                             
                         }
+
+                        // Se ocorrer uma exceção ao obter o ID da categoria, exibe a mensagem de erro e reinicia o loop.
                         catch (Exception ex)
                         {
                             Console.Clear();
@@ -144,12 +156,12 @@ namespace Ecommerce
                             Console.Clear();
                             continue;
                         }
-                    
 
+                        // Obtém a lista de produtos na categoria selecionada.
                         List<Products> products = new Products() { CategoryId = categoryId }.GetProducts(connection);
 
-                         Write("____________________\n", true);
-
+                        // Exibe a lista de produtos
+                        Write("____________________\n", true);
                         foreach (var theProduct in products)
                         {
                             Write($"\nNome: {theProduct.Name}", true);
@@ -158,16 +170,17 @@ namespace Ecommerce
                             Write($"Preço: {theProduct.Price:C}", true);
                             Write($"Estoque: {theProduct.Stock}\n", true);
                         }
-
                         Write("____________________\n", true);
 
+                        // Solicita ao usuário o nome do livro e a quantidade desejada.
                         selectedProductName = AskForInput("Qual livro você gostaria de adquirir dessa categoria? ", false);
-
                         productQuantity = Convert.ToInt32(AskForInput("\nQuantidade: ", false).Trim());
 
+                        // Obtém as informações do produto selecionado..
                         Products product = new Products().GetProductInfo(connection, selectedProductName);
 
-
+                        // Verifica se o estoque é suficiente para a quantidade desejada.
+                        // Se o estoque não for suficiente, exibe uma mensagem e reinicia o loop.
                         if (!product.IsStockAvailable(connection, productQuantity)) 
                         {
                             Write($"\nO livro {selectedProductName} está fora de estoque. Por favor, tente novamente.\n");
@@ -180,6 +193,7 @@ namespace Ecommerce
                             productId = product.ProductId;
                             productPrice = product.Price;
 
+                            // Cria um novo item de pedido com base nas informações fornecidas.
                             var newOrderItem = new OrderItems
                             {
                                 OrderId = orderId,
@@ -187,36 +201,51 @@ namespace Ecommerce
                                 Quantity = productQuantity,
                                 Price = productPrice
                             };
+
+                            // Insere o item de pedido no banco de dados.
                             newOrderItem.InsertOrderItems(connection);
 
+                            // Zera o valor total do pedido
                             totalAmount = 0m;
 
+                            // Obtém a lista de itens no pedido.
                             List<OrderItems> itemsInOrder = new OrderItems().GetOrderItems(connection, orderId);
 
+                            // Exibe os itens do pedido
                             Write("\n____________________\n", true);
                             Write($"Itens do Pedido [{orderId}]: \n", true);
                             foreach(var item in itemsInOrder)
                             {
+                                // Obtém as informações detalhadas do produto para cada item do pedido
                                 Products productDetails = new Products().GetProductById(connection, item.ProductId);
 
                                 Write($"Produto: {productDetails.Name}", true);
                                 Write($"Quantidade: {item.Quantity}", true);
                                 Write($"Preço unitário: {item.Price:C}\n", true);
 
+                                // Calcula o subtotal do pedido
                                 totalAmount += item.Quantity * item.Price;
 
                             }
+
+                            // Atualiza o valor total do pedido no banco de dados
                             newOrder.UpdateOrderTotalAmount(connection, totalAmount);
 
+                            // Exibe o subtotal do pedido
                             Write($"Subtotal: {totalAmount:C}\n", true);
                             Write("____________________\n", true);
 
+                            //
+                            // Divisão entre processos...
+                            //
+
+                            // Processo de adicionar/remover item para com o carrinho.
                             string addItemAnswer;
                             string editOrderAnswer;
                             string removeAnotherItemAnswer;
                             string itemToRemove;
 
-
+                            // Solicita ao usuário se deseja adicionar outro item ao pedido.
                             while (true)
                             {
                                 addItemAnswer = AskForInput($"Deseja adicionar outro item? Digite (Sim) ou (Não)", true).ToLower().Trim();
@@ -232,7 +261,7 @@ namespace Ecommerce
 
                             }
 
-
+                            // Se o usuário deseja adicionar outro item, limpa a tela e reinicia o loop de seleção de itens.
                             if (addItemAnswer == "sim")
                             {
                                 Console.Clear();
@@ -240,8 +269,8 @@ namespace Ecommerce
                                 continue;
                             }
 
-
-                            while(true)
+                            // Solicita ao usuário se deseja remover algum item do pedido.
+                            while (true)
                             {
                                  editOrderAnswer = AskForInput($"\nDeseja remover algum item do seu pedido? Digite (Sim) ou (Não)", true).ToLower().Trim();
 
@@ -255,20 +284,23 @@ namespace Ecommerce
                                  continue;
                             }
 
+                            // Processo de remoção um ou mais itens do pedido.
                             if (editOrderAnswer == "sim")
                             {
                                 while (true)
                                 {
                                     itemToRemove = AskForInput($"\nDigite o nome do item que deseja remover: ", false);
 
+                                    // Obtém informações do produto baseado no nome fornecido.
                                     product.GetProductInfo(connection, itemToRemove);
 
                                     productId = product.ProductId;
                                     productPrice = product.Price;
 
+                                    // Verifica se o item está no carrinho do pedido.
                                     bool itemExists = orderItemsHandler.ItemExists(connection, productId, orderId);
 
-
+                                    // Se o item não está no carrinho, exibe mensagem e reinicia a pergunta.
                                     if (!itemExists)
                                     {
                                         Write($"\nEsse item não está em seu carrinho. Tente novamente.", true);
@@ -276,21 +308,27 @@ namespace Ecommerce
                                         continue;
                                     }
 
+                                    // Remove o item do pedido.
                                     orderItemsHandler.RemoveOrderItems(connection, productId, orderId);
 
+                                    // Remove o item da lista de itens no pedido.
                                     itemsInOrder.RemoveAll(item => item.ProductId == productId);
 
                                     Write($"\n{itemToRemove} foi removido com sucesso!\n", true);
 
+                                    // Atualiza o valor total do pedido subtraindo o preço do item removido.
                                     totalAmount -= productPrice;
                                     newOrder.UpdateOrderTotalAmount(connection, totalAmount);
 
+                                    // Atualiza a lista de itens no pedido.
                                     itemsInOrder = orderItemsHandler.GetOrderItems(connection, newOrder.OrderId);
 
+                                    // Exibe os itens do pedido atualizado e o subtotal.
                                     Write("\n____________________\n", true);
                                     Write($"Itens do Pedido: [{orderId}]: \n", true);
                                     foreach (var item in itemsInOrder)
                                     {
+                                        // Obtém as informações detalhadas do produto.
                                         Products productDetails = new Products().GetProductById(connection, item.ProductId);
 
                                         Write($"Produto: {productDetails.Name}", true);
@@ -302,6 +340,7 @@ namespace Ecommerce
                                     Write($"Subtotal: {totalAmount:C}\n", true);
                                     Write("____________________\n", true);
 
+                                    // Pergunta se o usuário deseja remover outro item, caso sim, o loop para remoção é iniciado novamente.
                                     while (true)
                                     {
                                         removeAnotherItemAnswer = AskForInput($"\nDeseja remover outro item? Digite (Sim) ou (Não)", true).ToLower().Trim();
@@ -329,12 +368,15 @@ namespace Ecommerce
                                 }
                             }
 
+                            // Atualiza a lista final de itens no pedido
                             itemsInOrder = orderItemsHandler.GetOrderItems(connection, newOrder.OrderId);
 
+                            // Exibe os itens finais do pedido e o subtotal
                             Write("\n____________________\n", true);
                             Write($"Carrinho: [{orderId}]: \n", true);
                             foreach (var item in itemsInOrder)
                             {
+                                // Obtém as informações detalhadas do produto
                                 Products productDetails = new Products().GetProductById(connection, item.ProductId);
 
                                 Write($"Produto: {productDetails.Name}", true);
@@ -346,9 +388,15 @@ namespace Ecommerce
                             Write($"Subtotal: {totalAmount:C}\n", true);
                             Write("____________________\n", true);
 
+                            //
+                            // Divisão entre processos...
+                            //
+
+                            // Processo de compra.
 
                             string wantToBuyAnswer;
 
+                            // Pergunta se o usuário deseja efetuar a compra.
                             while (true)
                             {
                                 wantToBuyAnswer = AskForInput($"Deseja prosseguir com a compra? Digite (Sim) ou (Não).", true).ToLower().Trim();
@@ -376,10 +424,11 @@ namespace Ecommerce
                                 Environment.Exit(0);
                             }
 
-                            // Usuário deseja prosseguir com a compra.
+                            //
+                            // Usuário deseja prosseguir com a compra!
+                            //
 
                             // Usuário não tem saldo suficiente para adquirir os produtos do carrinho, cancelando-a e encerrando o programa.
-
                             if(userBalance < totalAmount)
                             {
                                 Write("\nSeu saldo é insuficiente para completar a compra...\n", true);
@@ -391,17 +440,28 @@ namespace Ecommerce
                             }
 
                             // Usuário tem saldo suficiente para adquirir os produtos do carrinho, prosseguindo com a conclusão da compra e encerramento do programa.
+
+                            // Subtrai e atribui o saldo do usuário do valor da compra.
                             userBalance -= totalAmount;
+
+                            // Atualiza o estado do pedido no banco de dados.
                             newOrder.CompletePurchase(connection, orderId);
+
+                            // Atualiza o saldo do usuário no banco de dados.
                             authenticatedUser.CartPurchase(connection, userBalance, actualUserId);
 
+                            // Verifica os itens disponíveis no carrinho baseado na lista.
                             foreach(var item in itemsInOrder)
                             {
+                                // Recebe o id do respectivo produto.
                                 product.GetProductById(connection, item.ProductId);
+
+                                // Atualiza o valor do estoque do produto no banco de dados.
                                 product.UpdateProductStock(connection, item.ProductId, item.Quantity);
 
                             }
 
+                            // Compra efetuada com sucesso, finalizando programa.
                             Write($"\nCompra efetuada com sucesso!", true);
                             Wait(1);
                             Write($"\nSaldo restante: {userBalance}");
@@ -411,6 +471,8 @@ namespace Ecommerce
                             Environment.Exit(0);
 
                         }
+
+                        // Recebe uma exceção "geral" e, após exibição da mensagem do respectivo erro, reinicia o código no bloco try.
                         catch (Exception ex)
                         {
                             Console.Clear();
@@ -488,6 +550,7 @@ namespace Ecommerce
             Thread.Sleep(milliseconds);
         }
 
+        // Função para registrar um novo usuário no banco de dados.
         static void RegisterNewUser(MySqlConnection connection, decimal choosenBalance)
         {
             string hashedPass;
@@ -540,7 +603,7 @@ namespace Ecommerce
 
         }
 
-        
+        // Função de execução do processo de login do usuário, de acordo com as informações no banco de dados.
         static void UserLogin(MySqlConnection connection, User authenticatedUser)
         {
 
