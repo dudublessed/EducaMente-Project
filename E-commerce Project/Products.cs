@@ -111,6 +111,7 @@ namespace E_commerce_Project
             return Stock >= quantity;
         }
 
+
         public void UpdateProductStock(MySqlConnection connection, int productId, int quantity)
         {
             string query = "UPDATE products SET Stock = Stock - @Quantity WHERE ProductId = @ProductId";

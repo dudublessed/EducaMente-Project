@@ -348,7 +348,6 @@ namespace Ecommerce
 
 
                             string wantToBuyAnswer;
-                            decimal userAfterPurchaseBalance;
 
                             while (true)
                             {
@@ -399,11 +398,14 @@ namespace Ecommerce
                             foreach(var item in itemsInOrder)
                             {
                                 product.GetProductById(connection, item.ProductId);
-                                product.UpdateProductStock(connection, productId, productQuantity);
+                                product.UpdateProductStock(connection, item.ProductId, item.Quantity);
 
                             }
 
                             Write($"\nCompra efetuada com sucesso!", true);
+                            Wait(1);
+                            Write($"\nSaldo restante: {userBalance}");
+                            Wait(2);
                             Write($"Muito obrigado por utilizar este programa!\n");
                             Wait(3);
                             Environment.Exit(0);
