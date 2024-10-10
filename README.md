@@ -1,4 +1,4 @@
-# 🚧 E-commerce Project (W.I.P) 🚧
+# 📚 E-commerce Project 🛍️
 
 A simple back-end project that simulates buying books from a library, uses database. 
 
